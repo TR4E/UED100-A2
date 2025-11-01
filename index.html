@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<!--
+  This document implements a simple bank-style UI prototype
+  required for Assessment 2. The prototype demonstrates:
+  - Responsive layout
+  - Accessible structure
+  - Login screen (front-end only)
+  - Account overview
+  - Transaction table
+  - Transfer form
+  It intentionally contains no backend or real banking functionality.
+-->
+<html lang="en">
+<head>
+  <!-- UTF-8 enables standard character support -->
+  <meta charset="utf-8" />
+
+  <!-- Ensures proper scaling on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Browser title text -->
+  <title>CommBank – UI Prototype</title>
+
+  <!-- Short semantic description used by search engines and assistive tech -->
+  <meta name="description"
+        content="Bank-style prototype including login, dashboard, transactions, and transfer form." />
+
+  <!-- Main stylesheet controlling all visual styles -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <!--
+    Accessibility feature:
+    Allows keyboard users to skip directly to main content
+    instead of tabbing through header/navigation first.
+  -->
+  <a class="skip-link" href="#main">Skip to main</a>
+
+  <!--
+    Site header section:
+    Contains brand logo and logout button placeholder.
+    No navigation links are required for this simplified prototype.
+  -->
+  <header class="site-header">
+    <div class="container header-inner">
+
+      <!--
+        Brand identity:
+        Uses an inline SVG diamond to loosely reference CommBank's style.
+      -->
+      <div class="brand">
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+          <!-- A rotated rectangle forms the diamond motif -->
+          <rect x="4" y="4" width="16" height="16" transform="rotate(45 12 12)" />
+        </svg>
+        <span>CommBank</span>
+      </div>
+
+      <!--
+        Placeholder nav container:
+        Only contains a logout button that is revealed upon login.
+      -->
+      <nav aria-label="Primary" class="primary-nav">
+        <!--
+          Hidden by default; shown on authenticated state.
+          App logic controlled through JavaScript.
+        -->
+        <button id="logoutBtn" class="btn-outline small" hidden>Logout</button>
+      </nav>
+    </div>
+  </header>
+
+  <!--
+    Main contains all interactive states/screens.
+    These are toggled with JS by showing/hiding <section> elements.
+  -->
+  <main id="main">
+
+    <!--
+      LOGIN SCREEN
+      Only front-end simulation.
+      Authentication is stored in localStorage for demonstration only.
+    -->
+    <section id="login" class="panel" aria-labelledby="loginHeading">
+      <div class="container">
+        <h1 id="loginHeading">Sign in</h1>
+
+        <!--
+          novalidate disables browser validation so we can handle
+          messaging manually in JS (custom messaging for assessment).
+        -->
+        <form id="loginForm" class="form" novalidate>
+          <!--
+            Customer ID:
+            Set to numeric input mode for phone keypad convenience.
+          -->
+          <label for="cust">Customer ID *</label>
+          <input id="cust" name="cust" type="text" inputmode="numeric" autocomplete="username" required />
+
+          <!-- Password input -->
+          <label for="pass">Password *</label>
+          <input id="pass" name="pass" type="password" autocomplete="current-password" required />
+
+          <div class="form-actions">
+            <button class="btn" type="submit">Log in</button>
+
+            <!--
+              Status area:
+              Text updates here via JS to indicate login validation.
+              aria-live polite announces text changes to screen readers.
+            -->
+            <p class="form-status" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!--
+      DASHBOARD SCREEN
+      Shows mock balances for two example accounts.
+      Visibility toggled via JavaScript.
+    -->
+    <section id="dashboard" class="panel" aria-labelledby="dashHeading" hidden>
+      <div class="container">
+        <h2 id="dashHeading">Accounts Overview</h2>
+
+        <!--
+          role=list semantics to group multiple account cards
+        -->
+        <div class="grid accounts" role="list">
+          <!-- Account card #1 -->
+          <article class="card" role="listitem">
+            <h3>Smart Access</h3>
+            <p class="muted">Everyday Account</p>
+            <!--
+              balance value displayed — can be updated dynamically
+            -->
+            <p class="balance" id="bal-001">$2,450.35</p>
+          </article>
+
+          <!-- Account card #2 -->
+          <article class="card" role="listitem">
+            <h3>NetBank Saver</h3>
+            <p class="muted">Savings</p>
+            <p class="balance" id="bal-002">$8,120.00</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      TRANSACTION VIEW
+      Displays static transaction array rendered by JS
+    -->
+    <section id="transactions" class="panel" aria-labelledby="txHeading" hidden>
+      <div class="container">
+        <h2 id="txHeading">Recent Transactions — Smart Access</h2>
+
+        <!--
+          Wrapper needed for horizontal scrolling if device is too narrow
+        -->
+        <div class="table-wrap">
+          <table class="tx-table">
+            <thead>
+              <tr><th>Date</th><th>Description</th><th>Amount</th><th>Balance</th></tr>
+            </thead>
+            <tbody id="txBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      TRANSFER VIEW
+      Only simulates transfer.
+      Basic client-side validation using regex pattern and numerical checks.
+    -->
+    <section id="transfer" class="panel" aria-labelledby="trHeading" hidden>
+      <div class="container">
+        <h2 id="trHeading">Transfer Money</h2>
+
+        <form id="transferForm" class="form" novalidate>
+          <!-- Source account selection -->
+          <label for="from">From account</label>
+          <select id="from" name="from">
+            <option value="001">Smart Access — 062-000 •••• 123</option>
+            <option value="002">NetBank Saver — 062-000 •••• 456</option>
+          </select>
+
+          <!-- Required: BSB + Account -->
+          <label for="to">To (BSB-Account)</label>
+          <input id="to" name="to" placeholder="062-000 12345678" required />
+
+          <!-- Required: Money amount -->
+          <label for="amount">Amount (AUD)</label>
+          <input id="amount" name="amount" type="number" step="0.01" min="0.01" required />
+
+          <!-- Optional description -->
+          <label for="desc">Description</label>
+          <input id="desc" name="desc" maxlength="40" placeholder="Optional" />
+
+          <div class="form-actions">
+            <button class="btn" type="submit">Submit transfer</button>
+
+            <!-- Status display for errors / success -->
+            <p class="form-status" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!--
+      TAB NAVIGATION
+      Visible only once logged in.
+      JS drives tab switching by toggling section visibility.
+    -->
+    <nav id="appTabs" class="tabs" hidden aria-label="App sections">
+      <div class="container">
+        <button data-tab="dashboard" class="tab active">Accounts</button>
+        <button data-tab="transactions" class="tab">Transactions</button>
+        <button data-tab="transfer" class="tab">Transfer</button>
+      </div>
+    </nav>
+  </main>
+
+  <!-- Simple footer -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> CommBank</p>
+      <small>Demonstration UI only. No live banking.</small>
+    </div>
+  </footer>
+
+  <!-- Main application logic -->
+  <script defer src="js/app.js"></script>
+</body>
+</html>
