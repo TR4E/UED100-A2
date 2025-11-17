@@ -2,13 +2,20 @@
 <!--
   This document implements a simple bank-style UI prototype
   required for Assessment 2. The prototype demonstrates:
-  - Responsive layout
-  - Accessible structure
-  - Login screen (front-end only)
-  - Account overview
-  - Transaction table
-  - Transfer form
-  It intentionally contains no backend or real banking functionality.
+  - Responsive layout with mobile-first design
+  - Accessible structure with ARIA labels and semantic HTML
+  - Login screen (front-end only) with validation
+  - Account overview with enhanced visual hierarchy
+  - Transaction table with improved readability
+  - Transfer form with comprehensive validation
+  
+  ASSESSMENT 3 UPDATES:
+  - Added comprehensive ARIA labels for screen readers
+  - Enhanced semantic HTML structure
+  - Improved form accessibility with helper text
+  - Added proper input types and autocomplete attributes
+  - Implemented toast notification system
+  - Added loading states for better UX
 -->
 <html lang="en">
 <head>
@@ -23,10 +30,10 @@
 
   <!-- Short semantic description used by search engines and assistive tech -->
   <meta name="description"
-        content="Bank-style prototype including login, dashboard, transactions, and transfer form." />
+        content="Accessible bank-style prototype including login, dashboard, transactions, and transfer form with enhanced usability features." />
 
   <!-- Main stylesheet controlling all visual styles -->
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="./css/style.css" />
 </head>
 
 <body>
@@ -35,22 +42,30 @@
     Allows keyboard users to skip directly to main content
     instead of tabbing through header/navigation first.
   -->
-  <a class="skip-link" href="#main">Skip to main</a>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!--
+    TOAST NOTIFICATION SYSTEM
+    Provides user feedback for actions (success/error/info)
+  -->
+  <div id="toastContainer" class="toast-container" role="alert" aria-live="polite" aria-atomic="true"></div>
 
   <!--
     Site header section:
     Contains brand logo and logout button placeholder.
-    No navigation links are required for this simplified prototype.
+    Semantic header element with proper navigation structure.
   -->
-  <header class="site-header">
+  <header class="site-header" role="banner">
     <div class="container header-inner">
 
       <!--
         Brand identity:
         Uses an inline SVG diamond to loosely reference CommBank's style.
+        Added proper ARIA label for accessibility.
       -->
       <div class="brand">
-        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-label="CommBank logo" role="img">
+          <title>CommBank Diamond Logo</title>
           <!-- A rotated rectangle forms the diamond motif -->
           <rect x="4" y="4" width="16" height="16" transform="rotate(45 12 12)" />
         </svg>
@@ -58,52 +73,162 @@
       </div>
 
       <!--
-        Placeholder nav container:
-        Only contains a logout button that is revealed upon login.
+        Primary navigation:
+        Contains logout button that is revealed upon login.
+        Enhanced with proper ARIA label and role.
       -->
-      <nav aria-label="Primary" class="primary-nav">
+      <nav aria-label="Primary navigation" class="primary-nav">
         <!--
           Hidden by default; shown on authenticated state.
-          App logic controlled through JavaScript.
+          Enhanced with descriptive ARIA label.
         -->
-        <button id="logoutBtn" class="btn-outline small" hidden>Logout</button>
+        <button 
+          id="logoutBtn" 
+          class="btn-outline small" 
+          aria-label="Log out of your account"
+          hidden>
+          Logout
+        </button>
       </nav>
     </div>
   </header>
 
   <!--
+    TOP TAB NAVIGATION
+    Visible only once logged in.
+    JS drives tab switching by toggling section visibility.
+    Enhanced with proper ARIA labels and keyboard navigation.
+    Fixed at top of page (sticky header).
+  -->
+  <nav id="appTabs" class="tabs" hidden aria-label="Application sections">
+    <div class="container">
+      <button 
+        data-tab="dashboard" 
+        class="tab active"
+        aria-label="View accounts"
+        aria-selected="true"
+        role="tab">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span>Accounts</span>
+      </button>
+      <button 
+        data-tab="transactions" 
+        class="tab"
+        aria-label="View transactions"
+        aria-selected="false"
+        role="tab">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+        <span>Transactions</span>
+      </button>
+      <button 
+        data-tab="transfer" 
+        class="tab"
+        aria-label="Transfer money"
+        aria-selected="false"
+        role="tab">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        <span>Transfer</span>
+      </button>
+    </div>
+  </nav>
+
+  <!--
     Main contains all interactive states/screens.
     These are toggled with JS by showing/hiding <section> elements.
+    Enhanced with proper semantic structure and ARIA landmarks.
   -->
-  <main id="main">
+  <main id="main" role="main">
 
     <!--
       LOGIN SCREEN
       Only front-end simulation.
       Authentication is stored in localStorage for demonstration only.
+      Enhanced with comprehensive accessibility features and validation.
     -->
     <section id="login" class="panel" aria-labelledby="loginHeading">
       <div class="container">
-        <h1 id="loginHeading">Sign in</h1>
+        <h1 id="loginHeading">Sign in to your account</h1>
+        <p class="section-description">Enter your credentials to access your accounts</p>
 
         <!--
           novalidate disables browser validation so we can handle
           messaging manually in JS (custom messaging for assessment).
+          Enhanced with proper ARIA attributes and helper text.
         -->
-        <form id="loginForm" class="form" novalidate>
+        <form id="loginForm" class="form" novalidate aria-describedby="loginHelp">
           <!--
             Customer ID:
             Set to numeric input mode for phone keypad convenience.
+            Enhanced with proper ARIA labels and helper text.
           -->
-          <label for="cust">Customer ID *</label>
-          <input id="cust" name="cust" type="text" inputmode="numeric" autocomplete="username" required />
+          <div class="form-group">
+            <label for="cust">
+              Customer ID 
+              <span class="required-indicator" aria-label="required">*</span>
+            </label>
+            <input 
+              id="cust" 
+              name="cust" 
+              type="text" 
+              inputmode="numeric" 
+              autocomplete="username" 
+              aria-required="true"
+              aria-describedby="custHelp"
+              placeholder="Enter your customer ID"
+              required />
+            <small id="custHelp" class="helper-text">Your unique customer identification number</small>
+          </div>
 
-          <!-- Password input -->
-          <label for="pass">Password *</label>
-          <input id="pass" name="pass" type="password" autocomplete="current-password" required />
+          <!-- 
+            Password input 
+            Enhanced with security features and accessibility
+          -->
+          <div class="form-group">
+            <label for="pass">
+              Password 
+              <span class="required-indicator" aria-label="required">*</span>
+            </label>
+            <div class="password-wrapper">
+              <input 
+                id="pass" 
+                name="pass" 
+                type="password" 
+                autocomplete="current-password" 
+                aria-required="true"
+                aria-describedby="passHelp"
+                placeholder="Enter your password"
+                required />
+              <button 
+                type="button" 
+                id="togglePassword" 
+                class="toggle-password"
+                aria-label="Show password">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+            <small id="passHelp" class="helper-text">Your secure password</small>
+          </div>
 
           <div class="form-actions">
-            <button class="btn" type="submit">Log in</button>
+            <button class="btn" type="submit" aria-label="Submit login form">
+              <span class="btn-text">Log in</span>
+              <span class="btn-loader" hidden aria-hidden="true"></span>
+            </button>
 
             <!--
               Status area:
@@ -112,6 +237,10 @@
             -->
             <p class="form-status" role="status" aria-live="polite"></p>
           </div>
+
+          <p id="loginHelp" class="form-info">
+            <strong>Demo credentials:</strong> Use any customer ID and password to sign in.
+          </p>
         </form>
       </div>
     </section>
@@ -120,30 +249,40 @@
       DASHBOARD SCREEN
       Shows mock balances for two example accounts.
       Visibility toggled via JavaScript.
+      Enhanced with better semantic structure and accessibility.
     -->
     <section id="dashboard" class="panel" aria-labelledby="dashHeading" hidden>
       <div class="container">
-        <h2 id="dashHeading">Accounts Overview</h2>
+        <h2 id="dashHeading">Your Accounts Overview</h2>
+        <p class="section-description">View your account balances and manage your finances</p>
 
         <!--
-          role=list semantics to group multiple account cards
+          Enhanced semantic structure with proper ARIA roles
+          and improved visual hierarchy
         -->
-        <div class="grid accounts" role="list">
+        <div class="grid accounts" role="list" aria-label="Your accounts">
           <!-- Account card #1 -->
-          <article class="card" role="listitem">
-            <h3>Smart Access</h3>
-            <p class="muted">Everyday Account</p>
-            <!--
-              balance value displayed — can be updated dynamically
-            -->
-            <p class="balance" id="bal-001">$2,450.35</p>
+          <article class="card" role="listitem" tabindex="0">
+            <div class="card-header">
+              <h3>Smart Access</h3>
+              <p class="muted">Everyday Account</p>
+            </div>
+            <div class="card-body">
+              <p class="balance" id="bal-001" aria-label="Balance: $2,450.35">$2,450.35</p>
+              <p class="account-number muted" aria-label="Account number">062-000 •••• 123</p>
+            </div>
           </article>
 
           <!-- Account card #2 -->
-          <article class="card" role="listitem">
-            <h3>NetBank Saver</h3>
-            <p class="muted">Savings</p>
-            <p class="balance" id="bal-002">$8,120.00</p>
+          <article class="card" role="listitem" tabindex="0">
+            <div class="card-header">
+              <h3>NetBank Saver</h3>
+              <p class="muted">Savings</p>
+            </div>
+            <div class="card-body">
+              <p class="balance" id="bal-002" aria-label="Balance: $8,120.00">$8,120.00</p>
+              <p class="account-number muted" aria-label="Account number">062-000 •••• 456</p>
+            </div>
           </article>
         </div>
       </div>
@@ -152,18 +291,27 @@
     <!--
       TRANSACTION VIEW
       Displays static transaction array rendered by JS
+      Enhanced with better accessibility and responsive design
     -->
     <section id="transactions" class="panel" aria-labelledby="txHeading" hidden>
       <div class="container">
-        <h2 id="txHeading">Recent Transactions — Smart Access</h2>
+        <h2 id="txHeading">Recent Transactions</h2>
+        <p class="section-description">Smart Access – 062-000 •••• 123</p>
 
         <!--
           Wrapper needed for horizontal scrolling if device is too narrow
+          Enhanced with proper ARIA labels
         -->
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Transaction history table" tabindex="0">
           <table class="tx-table">
+            <caption class="sr-only">Recent transactions for Smart Access account</caption>
             <thead>
-              <tr><th>Date</th><th>Description</th><th>Amount</th><th>Balance</th></tr>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Description</th>
+                <th scope="col" class="text-right">Amount</th>
+                <th scope="col" class="text-right">Balance</th>
+              </tr>
             </thead>
             <tbody id="txBody"></tbody>
           </table>
@@ -174,65 +322,112 @@
     <!--
       TRANSFER VIEW
       Only simulates transfer.
-      Basic client-side validation using regex pattern and numerical checks.
+      Enhanced with comprehensive validation and accessibility.
     -->
     <section id="transfer" class="panel" aria-labelledby="trHeading" hidden>
       <div class="container">
         <h2 id="trHeading">Transfer Money</h2>
+        <p class="section-description">Send money securely to another account</p>
 
-        <form id="transferForm" class="form" novalidate>
+        <form id="transferForm" class="form" novalidate aria-describedby="transferHelp">
           <!-- Source account selection -->
-          <label for="from">From account</label>
-          <select id="from" name="from">
-            <option value="001">Smart Access — 062-000 •••• 123</option>
-            <option value="002">NetBank Saver — 062-000 •••• 456</option>
-          </select>
+          <div class="form-group">
+            <label for="from">
+              From account
+              <span class="required-indicator" aria-label="required">*</span>
+            </label>
+            <select 
+              id="from" 
+              name="from" 
+              aria-required="true"
+              aria-describedby="fromHelp">
+              <option value="001">Smart Access – 062-000 •••• 123 ($2,450.35)</option>
+              <option value="002">NetBank Saver – 062-000 •••• 456 ($8,120.00)</option>
+            </select>
+            <small id="fromHelp" class="helper-text">Select the account to transfer from</small>
+          </div>
 
           <!-- Required: BSB + Account -->
-          <label for="to">To (BSB-Account)</label>
-          <input id="to" name="to" placeholder="062-000 12345678" required />
+          <div class="form-group">
+            <label for="to">
+              To (BSB-Account)
+              <span class="required-indicator" aria-label="required">*</span>
+            </label>
+            <input 
+              id="to" 
+              name="to" 
+              type="text"
+              placeholder="062-000 12345678" 
+              aria-required="true"
+              aria-describedby="toHelp"
+              autocomplete="off"
+              required />
+            <small id="toHelp" class="helper-text">Format: BSB (6 digits) followed by account number (6-9 digits)</small>
+          </div>
 
           <!-- Required: Money amount -->
-          <label for="amount">Amount (AUD)</label>
-          <input id="amount" name="amount" type="number" step="0.01" min="0.01" required />
+          <div class="form-group">
+            <label for="amount">
+              Amount (AUD)
+              <span class="required-indicator" aria-label="required">*</span>
+            </label>
+            <input 
+              id="amount" 
+              name="amount" 
+              type="number" 
+              step="0.01" 
+              min="0.01" 
+              placeholder="0.00"
+              aria-required="true"
+              aria-describedby="amountHelp"
+              autocomplete="off"
+              required />
+            <small id="amountHelp" class="helper-text">Minimum transfer amount: $0.01</small>
+          </div>
 
           <!-- Optional description -->
-          <label for="desc">Description</label>
-          <input id="desc" name="desc" maxlength="40" placeholder="Optional" />
+          <div class="form-group">
+            <label for="desc">Description (Optional)</label>
+            <input 
+              id="desc" 
+              name="desc" 
+              type="text"
+              maxlength="40" 
+              placeholder="e.g., Rent payment, Birthday gift"
+              aria-describedby="descHelp" />
+            <small id="descHelp" class="helper-text">Add a note for this transfer (max 40 characters)</small>
+          </div>
 
           <div class="form-actions">
-            <button class="btn" type="submit">Submit transfer</button>
+            <button class="btn" type="submit" aria-label="Submit transfer">
+              <span class="btn-text">Submit transfer</span>
+              <span class="btn-loader" hidden aria-hidden="true"></span>
+            </button>
 
             <!-- Status display for errors / success -->
             <p class="form-status" role="status" aria-live="polite"></p>
           </div>
+
+          <p id="transferHelp" class="form-info">
+            <strong>Note:</strong> This is a demonstration only. No actual transfer will be processed.
+          </p>
         </form>
       </div>
     </section>
-
-    <!--
-      TAB NAVIGATION
-      Visible only once logged in.
-      JS drives tab switching by toggling section visibility.
-    -->
-    <nav id="appTabs" class="tabs" hidden aria-label="App sections">
-      <div class="container">
-        <button data-tab="dashboard" class="tab active">Accounts</button>
-        <button data-tab="transactions" class="tab">Transactions</button>
-        <button data-tab="transfer" class="tab">Transfer</button>
-      </div>
-    </nav>
   </main>
 
-  <!-- Simple footer -->
-  <footer class="site-footer">
+  <!-- 
+    Simple footer with semantic structure 
+    Enhanced with proper role and copyright info
+  -->
+  <footer class="site-footer" role="contentinfo">
     <div class="container footer-inner">
       <p>© <span id="year"></span> CommBank</p>
-      <small>Demonstration UI only. No live banking.</small>
+      <small>Demonstration UI only. No live banking functionality.</small>
     </div>
   </footer>
 
   <!-- Main application logic -->
-  <script defer src="js/app.js"></script>
+  <script src="./js/app.js"></script>
 </body>
 </html>
